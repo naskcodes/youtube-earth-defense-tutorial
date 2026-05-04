@@ -1,0 +1,60 @@
+📦 Project Setup:
+  ☐ Download basic project files
+  ☐ Running project on local web server
+  ☐ Review basic project code
+  ☐ Create Phaser game instance
+
+🌍 Earth + Orbiting Player:
+  ☐ Load assets
+  ☐ Add Earth sprite to center of screen
+  ☐ Add player satellite/turret sprite
+  ☐ Rotate player around Earth using angle + Math.sin/cos
+  ☐ Handle player rotation input (left/right keys)
+
+🔫 Shooting Mechanics:
+  ☐ Create bullet sprite and group
+  ☐ Fire bullet outward from current turret angle
+  ☐ Add cooldown or rate limit to firing
+  ☐ Clean up bullets when off-screen
+
+👾 Enemies & Spawning:
+  ☐ Create enemy sprite and group
+  ☐ Spawn enemies from edges of screen at intervals
+  ☐ Move enemies toward Earth center
+  ☐ Clean up enemies when off-screen or destroyed
+  ☐ Difficulty scaling
+  ☐ Rotate and scale enemies
+
+💥 Collisions:
+  ☐ Detect bullet vs. enemy overlap
+  ☐ Destroy both and play explosion effect or animation
+  ☐ Add score +1 per enemy destroyed
+
+💔 Earth Damage & Game Over:
+  ☐ Detect when enemy collides with Earth
+  ☐ Decrease Earth HP (e.g., from 3 to 0)
+  ☐ Add screen shake or flash when Earth is hit
+  ☐ Add Game Over scene with final score + restart option
+
+📊 UI & Polish:
+  ☐ Display score on screen
+  ☐ Display Earth HP visually (e.g., hearts or bar)
+  ☐ Add title scene (Click to Start)
+  ☐ Add background music and sound effects
+  ☐ Camera fade in/out for scene transitions
+
+
+-------------------------------
+
+Enhancement Ideas:
+  ☐ weapon power ups
+  ☐ mobile support
+  ☐ other enemy types
+  ☐ high scores
+  ☐ spawn with shield or be invulnerable for period of time
+  ☐ instructions, options, and credits scenes
+  ☐ handle player rotation input (mouse)
+
+-------------------------------
+☐ ✔ ✘
+-------------------------------
