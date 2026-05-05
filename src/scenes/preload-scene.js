@@ -1,5 +1,6 @@
 import Phaser from '../lib/phaser.js';
 import { SCENE_KEYS } from '../common/scene-keys.js';
+import { IMAGE_ASSETS, AUDIO_ASSETS, SPRITESHEET_ASSETS } from '../common/assets.js';
 
 export class PreloadScene extends Phaser.Scene {
     constructor() {
@@ -8,8 +9,33 @@ export class PreloadScene extends Phaser.Scene {
         });
     }
 
+    preload() {
+        IMAGE_ASSETS.forEach((asset) => {
+            this.load.image(asset.assetKey, asset.path);
+        });
+
+        AUDIO_ASSETS.forEach((asset) => {
+            this.load.audio(asset.assetKey, asset.path);
+        });
+
+        SPRITESHEET_ASSETS.forEach((asset) => {
+            this.load.spritesheet(asset.assetKey, asset.path, {
+                frameWidth: asset.frameWidth,
+                frameHeight: asset.frameHeight,
+            });
+        });
+    }
+
     create() {
-        console.log('preload-scene create called');
+        SPRITESHEET_ASSETS.forEach((asset) => {
+            this.anims.create({
+                key: asset.assetKey,
+                frames: this.anims.generateFrameNumbers(asset.assetKey),
+                frameRate: asset.frameRate,
+                repeat: asset.repeat,
+            });
+        });
+
         this.scene.start(SCENE_KEYS.GAME_SCENE);
     }
 }
