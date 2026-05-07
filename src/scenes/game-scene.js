@@ -7,6 +7,8 @@ export class GameScene extends Phaser.Scene {
     #planet;
     #cursorKeys;
     #playerAngleInRadians;
+    #bulletGroup;
+    #lastBulletFireTime;
     
     constructor() {
         super({
@@ -24,10 +26,13 @@ export class GameScene extends Phaser.Scene {
        this.#playerAngleInRadians = 0;
        this.#updatePlayerPosition();
 
+       this.#bulletGroup = this.physics.add.group([]);
+       this.#lastBulletFireTime = 0;
+
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
     }
 
-    update() {
+    update(time) {
         if (this.#cursorKeys.left.isDown) {
             this.#playerAngleInRadians -= 0.06;
         } else if (this.#cursorKeys.right.isDown) {
@@ -35,6 +40,17 @@ export class GameScene extends Phaser.Scene {
         }
 
         this.#updatePlayerPosition();
+
+        if (Phaser.Input.Keyboard.JustDown(this.#cursorKeys.space) && time > this.#lastBulletFireTime + 200) {
+            this.#fireBullet();
+            this.#lastBulletFireTime = time;
+        }
+
+        this.#bulletGroup.getChildren().forEach((bullet) => {
+            if (bullet.active && (bullet.x < 0 || bullet.x > this.scale.width || bullet.y < 0|| bullet.y > this.scale.height )) {
+                bullet.setActive(false).setVisible(false);
+            }
+        });
     }
 
     #updatePlayerPosition() {
@@ -42,5 +58,18 @@ export class GameScene extends Phaser.Scene {
         const y = this.scale.height / 2 + (this.#planet.displayHeight / 2) * Math.sin(this.#playerAngleInRadians);
         this.#player.setPosition(x, y);
         this.#player.rotation = this.#playerAngleInRadians + Math.PI / 2;
+    }
+
+    #fireBullet() {
+        const x = this.#player.x;
+        const y = this.#player.y;
+        const velocity = this.physics.velocityFromRotation(this.#playerAngleInRadians, 400);
+        const bullet = this.#bulletGroup.getFirstDead(true, x, y, ASSET_KEYS.BULLET, 0, true);
+
+        bullet.setActive(true).setVisible(true).setScale(1.5).play(ASSET_KEYS.BULLET).enableBody();
+        bullet.setVelocity(velocity.x, velocity.y);
+        bullet.setRotation(this.#player.rotation);
+
+        //console.log("fireBullet: number of bullet game objects in group -", this.#bulletGroup.getChildren().length);
     }
 }
