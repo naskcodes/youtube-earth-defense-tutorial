@@ -2,6 +2,10 @@ import Phaser from '../lib/phaser.js';
 import { SCENE_KEYS } from '../common/scene-keys.js';
 import { ASSET_KEYS } from '../common/assets.js';
 
+const DATA_KEYS = Object.freeze({
+    ROTATION_SPEED: 'ROTATION_SPEED'
+});
+
 export class GameScene extends Phaser.Scene {
     #player;
     #planet;
@@ -9,6 +13,10 @@ export class GameScene extends Phaser.Scene {
     #playerAngleInRadians;
     #bulletGroup;
     #lastBulletFireTime;
+    #enemyGroup;
+    #enemySpeed;
+    #spawnDelay;
+    #spawnTimer;
     
     constructor() {
         super({
@@ -25,10 +33,23 @@ export class GameScene extends Phaser.Scene {
        this.#player = this.add.image(0, 0, ASSET_KEYS.SHIP);
        this.#playerAngleInRadians = 0;
        this.#updatePlayerPosition();
-
        this.#bulletGroup = this.physics.add.group([]);
        this.#lastBulletFireTime = 0;
-
+       this.#enemyGroup = this.physics.add.group([]);
+       this.#spawnDelay = 1250;
+       this.#enemySpeed = 50;
+       this.#spawnTimer = this.time.addEvent({
+        delay: this.#spawnDelay,
+        callback: this.#spawnEnemy,
+        callbackScope: this,
+        loop: true
+       });
+       this.time.addEvent({
+        delay: 10000,
+        callback: this.#increaseDifficulty,
+        callbackScope: this,
+        loop: true
+       });
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
     }
 
@@ -51,11 +72,20 @@ export class GameScene extends Phaser.Scene {
                 bullet.setActive(false).setVisible(false);
             }
         });
+
+        this.#enemyGroup.getChildren().forEach((enemy) => {
+            if (enemy.active && (enemy.x < -50 || enemy.x > this.scale.width + 50 || enemy.y < -50|| enemy.y > this.scale.height + 50 )) {
+                enemy.setActive(false).setVisible(false);
+                return;
+            }
+            enemy.rotation += enemy.getData(DATA_KEYS.ROTATION_SPEED);
+        });
     }
 
     #updatePlayerPosition() {
         const x = this.scale.width / 2 + (this.#planet.displayHeight / 2) * Math.cos(this.#playerAngleInRadians);
         const y = this.scale.height / 2 + (this.#planet.displayHeight / 2) * Math.sin(this.#playerAngleInRadians);
+        
         this.#player.setPosition(x, y);
         this.#player.rotation = this.#playerAngleInRadians + Math.PI / 2;
     }
@@ -69,7 +99,48 @@ export class GameScene extends Phaser.Scene {
         bullet.setActive(true).setVisible(true).setScale(1.5).play(ASSET_KEYS.BULLET).enableBody();
         bullet.setVelocity(velocity.x, velocity.y);
         bullet.setRotation(this.#player.rotation);
+    }
 
-        //console.log("fireBullet: number of bullet game objects in group -", this.#bulletGroup.getChildren().length);
+    #spawnEnemy() {
+        let x = 0;
+        let y = 0;
+        const edge = Phaser.Math.Between(0, 3);
+        
+        if (edge === 0) {
+            x = 0;
+            y = Phaser.Math.Between(0, this.scale.height);
+        } else if (edge === 1) {
+            x = this.scale.width;
+            y = Phaser.Math.Between(0, this.scale.height);
+        } else if (edge === 2) {
+            x = Phaser.Math.Between(0, this.scale.width);
+            y = 0;
+        } else {
+            x = Phaser.Math.Between(0, this.scale.width);
+            y = this.scale.height;
+        }
+
+        const enemy = this.#enemyGroup.getFirstDead(true, x, y, ASSET_KEYS.ASTEROID, 0, true);
+
+        enemy.setActive(true).setVisible(true).enableBody().setScale(Phaser.Math.FloatBetween(0.75, 1.25)).setData(DATA_KEYS.ROTATION_SPEED, Phaser.Math.FloatBetween(-0.02, 0.02));
+        this.physics.moveTo(enemy, this.scale.width/2, this.scale.height/2, this.#enemySpeed);
+        enemy.body.setSize(enemy.displayWidth * 0.3, enemy.displayHeight * 0.3);
+    }
+
+    #increaseDifficulty() {
+        if (this.#spawnDelay > 500) {
+            this.#spawnDelay -= 50;
+            this.#spawnTimer.destroy();
+            this.#spawnTimer = this.time.addEvent({
+                delay: this.#spawnDelay,
+                callback: this.#spawnEnemy,
+                callbackScope: this,
+                loop: true
+            });
+        }
+
+        if (this.#enemySpeed < 200) {
+            this.#enemySpeed += 10;
+        }
     }
 }
