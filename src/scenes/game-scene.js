@@ -17,6 +17,8 @@ export class GameScene extends Phaser.Scene {
     #enemySpeed;
     #spawnDelay;
     #spawnTimer;
+    #destroyedEnemyGroup;
+    #score;
     
     constructor() {
         super({
@@ -36,6 +38,7 @@ export class GameScene extends Phaser.Scene {
        this.#bulletGroup = this.physics.add.group([]);
        this.#lastBulletFireTime = 0;
        this.#enemyGroup = this.physics.add.group([]);
+       this.#destroyedEnemyGroup = this.add.group([]);
        this.#spawnDelay = 1250;
        this.#enemySpeed = 50;
        this.#spawnTimer = this.time.addEvent({
@@ -50,6 +53,8 @@ export class GameScene extends Phaser.Scene {
         callbackScope: this,
         loop: true
        });
+       this.physics.add.overlap(this.#enemyGroup, this.#bulletGroup, this.#handleBulletEnemyCollison, undefined, this);
+       this.#score = 0;
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
     }
 
@@ -142,5 +147,23 @@ export class GameScene extends Phaser.Scene {
         if (this.#enemySpeed < 200) {
             this.#enemySpeed += 10;
         }
+    }
+
+    #handleBulletEnemyCollison(enemy, bullet) {
+        bullet.disableBody();
+        bullet.setActive(false).setVisible(false);
+        enemy.disableBody();
+        enemy.setActive(false).setVisible(false);
+        this.#score += 1;
+        console.log("Score: " + this.#score);
+        this.#spawnDestroyedEnemy(enemy.x, enemy.y);
+    }
+
+    #spawnDestroyedEnemy(x, y) {
+        const explosion = this.#destroyedEnemyGroup.getFirstDead(true, x, y, ASSET_KEYS.ASTEROID_EXPLODE, 0, true);
+        explosion.setActive(true).setVisible(true).play(ASSET_KEYS.ASTEROID_EXPLODE);
+        explosion.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
+            explosion.setActive(false).setVisible(false);
+        });
     }
 }
