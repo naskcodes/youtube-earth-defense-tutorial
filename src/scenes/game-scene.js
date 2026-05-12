@@ -7,9 +7,10 @@ const DATA_KEYS = Object.freeze({
 });
 
 export class GameScene extends Phaser.Scene {
-    #player;
     #planet;
+    #planetHealth;
     #cursorKeys;
+    #player;
     #playerAngleInRadians;
     #bulletGroup;
     #lastBulletFireTime;
@@ -19,6 +20,7 @@ export class GameScene extends Phaser.Scene {
     #spawnTimer;
     #destroyedEnemyGroup;
     #score;
+    #lockInput;
     
     constructor() {
         super({
@@ -31,12 +33,17 @@ export class GameScene extends Phaser.Scene {
             this.add.sprite(0, 0, ASSET_KEYS[`BACKGROUND_${i}`], 0).setOrigin(0).setScale(1, 1.25).play(ASSET_KEYS[`BACKGROUND_${i}`]).setAlpha(0.4);
         }
 
-       this.#planet = this.add.sprite(this.scale.width/2, this.scale.height/2, ASSET_KEYS.PLANET, 0).play(ASSET_KEYS.PLANET);
+       this.#planet = this.physics.add.sprite(this.scale.width/2, this.scale.height/2, ASSET_KEYS.PLANET, 0).play(ASSET_KEYS.PLANET);
+       this.#planet.body.setCircle(30, 18, 18);
+       this.#planetHealth = 3;
+
        this.#player = this.add.image(0, 0, ASSET_KEYS.SHIP);
        this.#playerAngleInRadians = 0;
        this.#updatePlayerPosition();
+
        this.#bulletGroup = this.physics.add.group([]);
        this.#lastBulletFireTime = 0;
+       
        this.#enemyGroup = this.physics.add.group([]);
        this.#destroyedEnemyGroup = this.add.group([]);
        this.#spawnDelay = 1250;
@@ -53,12 +60,23 @@ export class GameScene extends Phaser.Scene {
         callbackScope: this,
         loop: true
        });
+       
        this.physics.add.overlap(this.#enemyGroup, this.#bulletGroup, this.#handleBulletEnemyCollison, undefined, this);
+       
+       this.physics.add.overlap(this.#planet, this.#enemyGroup, this.#handlePlanetEnemyCollison, undefined, this);
+       
        this.#score = 0;
+       
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
+
+       this.#lockInput = false;
     }
 
     update(time) {
+        if (this.#lockInput) {
+            return;
+        }
+
         if (this.#cursorKeys.left.isDown) {
             this.#playerAngleInRadians -= 0.06;
         } else if (this.#cursorKeys.right.isDown) {
@@ -165,5 +183,40 @@ export class GameScene extends Phaser.Scene {
         explosion.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
             explosion.setActive(false).setVisible(false);
         });
+    }
+
+    #handlePlanetEnemyCollison(planet, enemy) {
+        enemy.disableBody();
+        enemy.setActive(false).setVisible(false);
+        this.#spawnDestroyedEnemy(enemy.x, enemy.y);
+        this.#damagePlanet();
+    }
+
+    #damagePlanet() {
+        if (this.#planetHealth <= 0) {
+            return;
+        }
+
+        this.#planetHealth -= 1;
+        console.log("Planet hit! HP left: ", this.#planetHealth);
+
+        this.cameras.main.shake(150, 0.02);
+        this.tweens.add({
+            targets: this.#planet,
+            scaleX: 1.1,
+            scaleY: 0.9,
+            duration: 100,
+            ease: Phaser.Math.Easing.Quadratic.InOut,
+            yoyo: true
+        });
+
+        if (this.#planetHealth <= 0) {
+            this.#lockInput = true;
+            this.#player.setVisible(false);
+            this.#planet.disableBody();
+            this.#planet.setActive(false).setVisible(false);
+            this.#spawnDestroyedEnemy(this.#planet.x, this.#planet.y);
+            this.scene.start(SCENE_KEYS.GAME_OVER_SCENE, {score: this.#score});
+        }
     }
 }

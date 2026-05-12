@@ -2,6 +2,7 @@ import Phaser from './lib/phaser.js';
 import { SCENE_KEYS } from './common/scene-keys.js';
 import { GameScene } from './scenes/game-scene.js';
 import { PreloadScene } from './scenes/preload-scene.js';
+import { GameOverScene } from './scenes/game-over-scene.js';
 
 const gameConfig = {
     type: Phaser.CANVAS,
@@ -27,4 +28,5 @@ const gameConfig = {
 const game = new Phaser.Game(gameConfig);
 game.scene.add(SCENE_KEYS.PRELOAD_SCENE, PreloadScene);
 game.scene.add(SCENE_KEYS.GAME_SCENE, GameScene);
+game.scene.add(SCENE_KEYS.GAME_OVER_SCENE, GameOverScene);
 game.scene.start(SCENE_KEYS.PRELOAD_SCENE);
