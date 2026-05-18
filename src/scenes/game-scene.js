@@ -132,6 +132,9 @@ export class GameScene extends Phaser.Scene {
         bullet.setActive(true).setVisible(true).setScale(1.5).play(ASSET_KEYS.BULLET).enableBody();
         bullet.setVelocity(velocity.x, velocity.y);
         bullet.setRotation(this.#player.rotation);
+        this.sound.play(ASSET_KEYS.FX_SHOT, {
+            volume: 0.1
+        });
     }
 
     #spawnEnemy() {
@@ -194,6 +197,9 @@ export class GameScene extends Phaser.Scene {
         explosion.setActive(true).setVisible(true).play(ASSET_KEYS.ASTEROID_EXPLODE);
         explosion.once(Phaser.Animations.Events.ANIMATION_COMPLETE, () => {
             explosion.setActive(false).setVisible(false);
+        });
+        this.sound.play(ASSET_KEYS.FX_EXPLOSION, {
+            volume: 0.4
         });
     }
 

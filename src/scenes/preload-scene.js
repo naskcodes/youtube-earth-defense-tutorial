@@ -1,6 +1,6 @@
 import Phaser from '../lib/phaser.js';
 import { SCENE_KEYS } from '../common/scene-keys.js';
-import { IMAGE_ASSETS, AUDIO_ASSETS, SPRITESHEET_ASSETS } from '../common/assets.js';
+import { IMAGE_ASSETS, AUDIO_ASSETS, SPRITESHEET_ASSETS, ASSET_KEYS } from '../common/assets.js';
 
 export class PreloadScene extends Phaser.Scene {
     constructor() {
@@ -36,6 +36,10 @@ export class PreloadScene extends Phaser.Scene {
             });
         });
 
-        this.scene.start(SCENE_KEYS.GAME_SCENE);
+        this.sound.play(ASSET_KEYS.BACKGROUND_MUSIC, {
+            loop: true,
+            volume: 0.5
+        });
+        this.scene.start(SCENE_KEYS.TITLE_SCENE);
     }
 }
