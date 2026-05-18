@@ -20,6 +20,7 @@ export class GameScene extends Phaser.Scene {
     #spawnTimer;
     #destroyedEnemyGroup;
     #score;
+    #scoreText;
     #lockInput;
     
     constructor() {
@@ -66,6 +67,8 @@ export class GameScene extends Phaser.Scene {
        this.physics.add.overlap(this.#planet, this.#enemyGroup, this.#handlePlanetEnemyCollison, undefined, this);
        
        this.#score = 0;
+       const scoreTextPrefix = this.add.text(10, 10, 'Score: ', { fontSize: '16px'}).setDepth(2);
+       this.#scoreText = this.add.text(scoreTextPrefix.x + scoreTextPrefix.displayWidth, scoreTextPrefix.y, '0', { fontSize: '16px'}).setDepth(2);
        
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
 
@@ -172,8 +175,10 @@ export class GameScene extends Phaser.Scene {
         bullet.setActive(false).setVisible(false);
         enemy.disableBody();
         enemy.setActive(false).setVisible(false);
+
         this.#score += 1;
-        console.log("Score: " + this.#score);
+        this.#scoreText.setText(this.#score.toString(10));
+        
         this.#spawnDestroyedEnemy(enemy.x, enemy.y);
     }
 
