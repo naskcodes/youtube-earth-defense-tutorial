@@ -9,6 +9,7 @@ const DATA_KEYS = Object.freeze({
 export class GameScene extends Phaser.Scene {
     #planet;
     #planetHealth;
+    #planetHealthContainer;
     #cursorKeys;
     #player;
     #playerAngleInRadians;
@@ -37,6 +38,11 @@ export class GameScene extends Phaser.Scene {
        this.#planet = this.physics.add.sprite(this.scale.width/2, this.scale.height/2, ASSET_KEYS.PLANET, 0).play(ASSET_KEYS.PLANET);
        this.#planet.body.setCircle(30, 18, 18);
        this.#planetHealth = 3;
+       this.#planetHealthContainer = this.add.container(this.scale.width / 2, this.#planet.y + 50, [
+        this.add.sprite(-18, 0, ASSET_KEYS.HEART, 0).play(ASSET_KEYS.HEART),
+        this.add.sprite(0, 0, ASSET_KEYS.HEART, 0).play(ASSET_KEYS.HEART),
+        this.add.sprite(18, 0, ASSET_KEYS.HEART, 0).play(ASSET_KEYS.HEART),
+       ]);
 
        this.#player = this.add.image(0, 0, ASSET_KEYS.SHIP);
        this.#playerAngleInRadians = 0;
@@ -203,7 +209,7 @@ export class GameScene extends Phaser.Scene {
         }
 
         this.#planetHealth -= 1;
-        console.log("Planet hit! HP left: ", this.#planetHealth);
+        this.#planetHealthContainer.getAt(this.#planetHealth).destroy();
 
         this.cameras.main.shake(150, 0.02);
         this.tweens.add({
