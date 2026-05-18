@@ -33,7 +33,12 @@ export class GameOverScene extends Phaser.Scene {
         }).setOrigin(0.5);
 
         this.input.once(Phaser.Input.Events.POINTER_DOWN, () => {
-            this.scene.start(SCENE_KEYS.GAME_SCENE);
+            this.cameras.main.fadeOut(500);
+            this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+                this.scene.start(SCENE_KEYS.GAME_SCENE);
+            });
         });
+
+        this.cameras.main.fadeIn(500);
     }
 }

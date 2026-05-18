@@ -77,8 +77,9 @@ export class GameScene extends Phaser.Scene {
        this.#scoreText = this.add.text(scoreTextPrefix.x + scoreTextPrefix.displayWidth, scoreTextPrefix.y, '0', { fontSize: '16px'}).setDepth(2);
        
        this.#cursorKeys = this.input.keyboard.createCursorKeys();
-
        this.#lockInput = false;
+
+       this.cameras.main.fadeIn(500);
     }
 
     update(time) {
@@ -227,7 +228,11 @@ export class GameScene extends Phaser.Scene {
             this.#planet.disableBody();
             this.#planet.setActive(false).setVisible(false);
             this.#spawnDestroyedEnemy(this.#planet.x, this.#planet.y);
-            this.scene.start(SCENE_KEYS.GAME_OVER_SCENE, {score: this.#score});
+
+            this.cameras.main.fadeOut(500);
+            this.cameras.main.once(Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE, () => {
+                this.scene.start(SCENE_KEYS.GAME_OVER_SCENE, {score: this.#score});
+            });
         }
     }
 }
